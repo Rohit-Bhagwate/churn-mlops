@@ -12,9 +12,6 @@ venv/
 mlruns/
 mlartifacts/
 
-# Models
-model/
-*.pkl
 
 # Logs
 *.log
@@ -26,5 +23,6 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
-
+# Database
+*.db
 *.tar
