@@ -9,7 +9,8 @@ import os
 
 app = FastAPI()
 #Logging setup
-logging.basicConfig(level=logging.INFO,filename="app.log",filemode="a",format="%(asctime)s - (levelname)s - %(message)")
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - (levelname)s - %(message)")
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,6 +43,14 @@ class ChurnInput(BaseModel):
 def home():
     return{"message": "Churn Prediction API is running"}
 
+@app.on_event("startup")
+def startup_event():
+    logging.info("Application started successfully")
+
+@app.get("/health")
+def health():
+    return {"status": "health"}
+
 @app.post("/predict")
 def predict(data: ChurnInput):
     try:
@@ -49,10 +58,14 @@ def predict(data: ChurnInput):
         df = pd.DataFrame([data.dict()])
         prediction = model.predict(df)
         #Log out
-        logging.info(f"prediction:{prediction}")
+        logging.info(f"prediction result:{prediction.tolist()}")
         label = "Churn" if int(prediction[0]) == 1 else "No Churn"
         return {"prediction": int(prediction[0]),
                 "label":label}
     except Exception as e:
         logging.error((f"Error occured: {e}"))
         return{"error": str(e)}
+
+@app.get("/version")
+def version():
+    return {"version":"1.0"}
