@@ -11,7 +11,7 @@ import uuid
 app = FastAPI()
 #Logging setup
 logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s - (levelname)s - %(message)")
+                    format="%(asctime)s - %(levelname)s - %(message)")
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-COPY mlflow.db .
-
 RUN pip install --upgrade pip
 
 RUN pip install -r requirements.txt
