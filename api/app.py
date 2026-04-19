@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO,filename="app.log",filemode="a",format="%
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #Load Trained Pipeline
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
 model = joblib.load("model/churn_pipeline.pkl")
 
 class ChurnInput(BaseModel):
