@@ -6,6 +6,7 @@ import logging
 import mlflow
 import mlflow.pyfunc
 import os
+import uuid
 
 app = FastAPI()
 #Logging setup
@@ -15,8 +16,12 @@ logging.basicConfig(level=logging.INFO,
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #Load Trained Pipeline
-
-model = joblib.load("model/churn_pipeline.pkl")
+try:
+    model = joblib.load(os.path.join(BASE_DIR,"model","churn_pipeline.pkl"))
+    logging.info("Model loaded successfully")
+except Exception as e:
+    logging.error(f"Model loading failes:{str(e)}")
+    model = None
 
 class ChurnInput(BaseModel):
     gender: str
@@ -53,19 +58,30 @@ def health():
 
 @app.post("/predict")
 def predict(data: ChurnInput):
+    request_id = str(uuid.uuid4())
     try:
-        logging.info(f"Input Data: {data.dict()}")
+        if model is None:
+            return{"stats": "error",
+                   "message": "Model not available",
+                   "request_id": request_id}
+        logging.info(f"Request ID: {request_id}")
+        logging.info(f"Incoming request: {data.dict()}")
         df = pd.DataFrame([data.dict()])
         prediction = model.predict(df)
         #Log out
-        logging.info(f"prediction result:{prediction.tolist()}")
         label = "Churn" if int(prediction[0]) == 1 else "No Churn"
-        return {"prediction": int(prediction[0]),
+        logging.info(f"prediction result:{prediction.tolist()}")
+        return {"status":"success",
+                "request_id": request_id,
+                "prediction": int(prediction[0]),
                 "label":label}
     except Exception as e:
-        logging.error((f"Error occured: {e}"))
-        return{"error": str(e)}
+        logging.error((f"Error occured: {str(e)}"))
+        return{"status":"error",
+               "message": "Predicton failed",
+               "request_id":request_id}
 
 @app.get("/version")
 def version():
-    return {"version":"1.0"}
+    return {"status":"error",
+            "version":"1.0"}
