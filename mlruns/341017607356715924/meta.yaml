@@ -1,0 +1,8 @@
+artifact_location: file:///C:/Users/rohit/Desktop/MLOps/Churn-mlops/pythonProject1/mlruns/341017607356715924
+creation_time: 1776511486099
+experiment_id: '341017607356715924'
+last_update_time: 1776511486099
+lifecycle_stage: active
+name: churn_prediction
+trace_location: null
+workspace: default

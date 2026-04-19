@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/rohit/Desktop/MLOps/Churn-mlops/pythonProject1/mlruns/341017607356715924/7b550999bfd04b9baa39145466838670/artifacts
+end_time: 1776585666251
+entry_point_name: ''
+experiment_id: '341017607356715924'
+lifecycle_stage: active
+run_id: 7b550999bfd04b9baa39145466838670
+run_name: masked-chimp-129
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776585656132
+status: 3
+tags: []
+user_id: rohit

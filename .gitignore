@@ -8,11 +8,6 @@ __pycache__/
 env/
 venv/
 
-# MLflow
-mlruns/
-mlartifacts/
-
-
 # Logs
 *.log
 

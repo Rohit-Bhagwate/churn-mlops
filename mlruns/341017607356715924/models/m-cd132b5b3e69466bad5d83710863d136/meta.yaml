@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/rohit/Desktop/MLOps/Churn-mlops/pythonProject1/mlruns/341017607356715924/models/m-cd132b5b3e69466bad5d83710863d136/artifacts
+creation_timestamp: 1776511486704
+experiment_id: '341017607356715924'
+last_updated_timestamp: 1776511495795
+model_id: m-cd132b5b3e69466bad5d83710863d136
+model_type: null
+name: model
+source_run_id: 540310d6a6cc47eb854fcc1d8b28dd0c
+status: 2
+status_message: null

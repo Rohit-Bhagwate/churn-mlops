@@ -6,8 +6,6 @@ COPY . .
 
 COPY mlflow.db .
 
-COPY mlruns ./mlruns
-
 RUN pip install --upgrade pip
 
 RUN pip install -r requirements.txt

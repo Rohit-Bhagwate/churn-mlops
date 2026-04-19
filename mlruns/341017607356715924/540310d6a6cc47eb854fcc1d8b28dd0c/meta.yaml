@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/rohit/Desktop/MLOps/Churn-mlops/pythonProject1/mlruns/341017607356715924/540310d6a6cc47eb854fcc1d8b28dd0c/artifacts
+end_time: 1776511495809
+entry_point_name: ''
+experiment_id: '341017607356715924'
+lifecycle_stage: active
+run_id: 540310d6a6cc47eb854fcc1d8b28dd0c
+run_name: beautiful-skunk-594
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776511486492
+status: 3
+tags: []
+user_id: rohit
