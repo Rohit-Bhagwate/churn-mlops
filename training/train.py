@@ -11,7 +11,7 @@ import mlflow.sklearn
 import os
 
 
-mlflow.set_tracking_uri("file:./mlruns")
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
 
 #Load data
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
