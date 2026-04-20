@@ -62,6 +62,7 @@ with mlflow.start_run() as run:
 
     model_path = os.path.join(model_dir, "churn_pipeline.pkl")
     joblib.dump(pipeline, model_path)
-    mlflow.sklearn.log_model(pipeline,"model")
+    mlflow.sklearn.log_model(pipeline,"model",
+                             registered_model_name="churn_model1")
 
     print("RUN ID:",run.info.run_id)

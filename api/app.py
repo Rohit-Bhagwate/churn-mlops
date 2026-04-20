@@ -17,7 +17,8 @@ logging.basicConfig(level=logging.INFO,
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #Load Trained Pipeline
 try:
-    model = joblib.load(os.path.join(BASE_DIR,"model","churn_pipeline.pkl"))
+    mlflow.set_tracking_uri("sqlite://mlflow.db")
+    model = mlflow.pyfunc.load_model("models:/churn_model1/Production")
     logging.info("Model loaded successfully")
 except Exception as e:
     logging.error(f"Model loading failes:{str(e)}")
