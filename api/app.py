@@ -15,9 +15,12 @@ logging.basicConfig(level=logging.INFO,
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+mlflow.set_tracking_uri(f"sqlite:///{os.path.join(BASE_DIR,'mlflow.db')}")
+
 #Load Trained Pipeline
 try:
-    mlflow.set_tracking_uri("sqlite://mlflow.db")
+    print("Loading model from MLflow...")
     model = mlflow.pyfunc.load_model("models:/churn_model1/Production")
     logging.info("Model loaded successfully")
 except Exception as e:

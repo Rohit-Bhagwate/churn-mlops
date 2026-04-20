@@ -2,7 +2,7 @@ creation_timestamp: 1776511748280
 current_stage: Production
 deployment_job_state: null
 description: ''
-last_updated_timestamp: 1776511762913
+last_updated_timestamp: 1776670272991
 model_id: m-cd132b5b3e69466bad5d83710863d136
 name: churn_model1
 run_id: 540310d6a6cc47eb854fcc1d8b28dd0c

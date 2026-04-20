@@ -1,9 +1,12 @@
 import mlflow.pyfunc
 import mlflow
 import pandas as pd
-mlflow.set_tracking_uri("file:./mlruns")
-#Lodad model from mlflow
+import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+mlflow.set_tracking_uri(f"sqlite:///{os.path.join(BASE_DIR, 'mlflow.db')}")
+
+#Lodad model from mlflow
 model = mlflow.pyfunc.load_model("models:/churn_model1/Production")
 
 #Example input
