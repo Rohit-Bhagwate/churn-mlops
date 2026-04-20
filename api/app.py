@@ -21,7 +21,7 @@ mlflow.set_tracking_uri(f"sqlite:///{os.path.join(BASE_DIR,'mlflow.db')}")
 #Load Trained Pipeline
 try:
     print("Loading model from MLflow...")
-    model = mlflow.pyfunc.load_model("models:/churn_model1/Production")
+    model = joblib.load("model/churn_pipeline.pkl")
     logging.info("Model loaded successfully")
 except Exception as e:
     logging.error(f"Model loading failes:{str(e)}")
