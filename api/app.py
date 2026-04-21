@@ -8,28 +8,29 @@ import mlflow.pyfunc
 import os
 import uuid
 from utils.logger import get_logger
+import boto3
+from io import BytesIO
 
 app = FastAPI()
 
 logger = get_logger()
 
 #Logging setup
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s - %(levelname)s - %(message)")
-
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 mlflow.set_tracking_uri(f"sqlite:///{os.path.join(BASE_DIR,'mlflow.db')}")
-
+S3_BUCKET = 'churn-mlops-bucket-12345'
+MODEL_KEY = os.getenv("MODEL_KEY",'churn_pipeline.pkl')
 #Load Trained Pipeline
 try:
-    print("Loading model from MLflow...")
-    MODEL_PATH = os.path.join(BASE_DIR, "model", "churn_pipeline.pkl")
-    model = joblib.load(MODEL_PATH)
-    logging.info("Model loaded successfully")
+    logger.info("Loading model from s3...")
+    s3 = boto3.client('s3')
+    obj = s3.get_object(Bucket = S3_BUCKET,Key= MODEL_KEY)
+    model = joblib.load(BytesIO(obj['Body'].read()))
+    logger.info("Model loaded successfully from s3")
 except Exception as e:
-    logging.error(f"Model loading failes:{str(e)}")
+    logger.error(f"Model loading failes:{str(e)}")
     model = None
 
 class ChurnInput(BaseModel):
@@ -57,6 +58,12 @@ class ChurnInput(BaseModel):
 def home():
     return{"message": "Churn Prediction API is running"}
 
+@app.get("/model-status")
+def model_status():
+    return{"model_loaded":model is not None,
+           "model_source":"s3",
+           "model_key":MODEL_KEY}
+
 @app.on_event("startup")
 def startup_event():
     logger.info("Application started successfully")
@@ -79,7 +86,7 @@ def predict(data: ChurnInput):
         prediction = model.predict(df)
         #Log out
         label = "Churn" if int(prediction[0]) == 1 else "No Churn"
-        logger.info(f"prediction result:{prediction.tolist()}")
+        logger.info(f"[{request_id}] prediction result: {prediction.tolist()}")
         return {"status":"success",
                 "request_id": request_id,
                 "prediction": int(prediction[0]),
@@ -92,5 +99,5 @@ def predict(data: ChurnInput):
 
 @app.get("/version")
 def version():
-    return {"status":"error",
+    return {"status":"success",
             "version":"1.0"}

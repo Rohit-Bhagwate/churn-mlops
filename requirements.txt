@@ -5,3 +5,4 @@ fastapi
 uvicorn
 joblib
 pydantic
+boto3
