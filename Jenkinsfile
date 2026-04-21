@@ -40,7 +40,7 @@ pipeline {
                 """
 
                 // ⏳ Wait for container to start
-                bat "timeout /t 10"
+                bat "ping 127.0.0.1 -n 10 > nul"
             }
         }
 
