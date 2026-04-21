@@ -38,6 +38,23 @@ pipeline {
                 -e AWS_DEFAULT_REGION=ap-south-1 ^
                 churn-app
                 """
+
+                // ⏳ Wait for container to start
+                bat "timeout /t 10"
+            }
+        }
+
+        stage('Test API') {
+            steps {
+                bat """
+                echo Testing model-status...
+                curl http://localhost:8001/model-status
+
+                echo Testing prediction...
+                curl -X POST http://localhost:8001/predict ^
+                -H "Content-Type: application/json" ^
+                -d "{\\"gender\\":\\"Male\\",\\"SeniorCitizen\\":0,\\"Partner\\":\\"Yes\\",\\"Dependents\\":\\"No\\",\\"tenure\\":5,\\"PhoneService\\":\\"Yes\\",\\"PaperlessBilling\\":\\"Yes\\",\\"MonthlyCharges\\":70,\\"TotalCharges\\":350,\\"MultipleLines\\":\\"No\\",\\"InternetService\\":\\"DSL\\",\\"OnlineSecurity\\":\\"Yes\\",\\"OnlineBackup\\":\\"No\\",\\"DeviceProtection\\":\\"No\\",\\"TechSupport\\":\\"Yes\\",\\"StreamingTV\\":\\"No\\",\\"StreamingMovies\\":\\"No\\",\\"Contract\\":\\"Month-to-month\\",\\"PaymentMethod\\":\\"Electronic check\\"}"
+                """
             }
         }
     }
