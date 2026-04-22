@@ -5,7 +5,7 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
         AWS_DEFAULT_REGION = 'ap-south-1'
-        EC2_HOST = '3.110.117.61'
+        EC2_HOST = '13.201.226.58'
         EC2_USER = 'ubuntu'
         KEY_PATH = 'C:/Users/rohit/Downloads/churn-key.pem'
     }
