@@ -5,7 +5,7 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
         AWS_DEFAULT_REGION = 'ap-south-1'
-        EC2_HOST = '13.201.226.58'
+        EC2_HOST = '13.206.100.228'
     }
 
     stages {
@@ -25,14 +25,14 @@ pipeline {
 
         stage('Save Image') {
             steps {
-                bat "docker save churn-app > churn-app.tar"
+                bat "docker save -o churn-app.tar churn-app"
             }
         }
 
         stage('Copy to EC2') {
             steps {
                 bat """
-                scp -i C:/ProgramData/Jenkins/.jenkins/churn-key.pem -o StrictHostKeyChecking=no churn-app.tar ubuntu@%EC2_HOST%:/home/ubuntu/
+                scp -i C:/ProgramData/Jenkins/.jenkins/churn-new-key.pem -o StrictHostKeyChecking=no churn-app.tar ubuntu@%EC2_HOST%:/home/ubuntu/
                 """
             }
         }
@@ -40,15 +40,7 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 bat """
-                ssh -i C:/ProgramData/Jenkins/.jenkins/churn-key.pem -o StrictHostKeyChecking=no ubuntu@%EC2_HOST% ^
-                "docker stop churn-container || true && ^
-                 docker rm churn-container || true && ^
-                 docker load < churn-app.tar && ^
-                 docker run -d -p 8001:8000 ^
-                 -e AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID% ^
-                 -e AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY% ^
-                 -e AWS_DEFAULT_REGION=ap-south-1 ^
-                 --name churn-container churn-app"
+                ssh -i C:/ProgramData/Jenkins/.jenkins/churn-new-key.pem -o StrictHostKeyChecking=no ubuntu@%EC2_HOST% "docker stop churn-container || true && docker rm churn-container || true && docker load -i /home/ubuntu/churn-app.tar && docker run -d -p 8001:8000 -e AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY% -e AWS_DEFAULT_REGION=ap-south-1 --name churn-container churn-app"
                 """
             }
         }
@@ -56,10 +48,10 @@ pipeline {
 
     post {
         success {
-            echo "Deployment successful "
+            echo "Deployment successful"
         }
         failure {
-            echo "Deployment failed "
+            echo "Deployment failed"
         }
     }
 }
