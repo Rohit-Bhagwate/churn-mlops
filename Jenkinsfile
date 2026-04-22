@@ -5,9 +5,7 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
         AWS_DEFAULT_REGION = 'ap-south-1'
-        EC2_HOST = '13.201.226.58'
-        EC2_USER = 'ubuntu'
-        KEY_PATH = 'C:/Users/rohit/Downloads/churn-key.pem'
+        EC2_HOST = '13.201.226.58'   // <-- your EC2 IP
     }
 
     stages {
@@ -33,25 +31,29 @@ pipeline {
 
         stage('Copy to EC2') {
             steps {
-                bat """
-                scp -i %KEY_PATH% -o StrictHostKeyChecking=no churn-app.tar %EC2_USER%@%EC2_HOST%:/home/ubuntu/
-                """
+                sshagent(['ec2-key']) {
+                    bat """
+                    scp -o StrictHostKeyChecking=no churn-app.tar ubuntu@%EC2_HOST%:/home/ubuntu/
+                    """
+                }
             }
         }
 
         stage('Deploy to EC2') {
             steps {
-                bat """
-                ssh -i %KEY_PATH% -o StrictHostKeyChecking=no %EC2_USER%@%EC2_HOST% ^
-                "docker stop churn-container || true && ^
-                 docker rm churn-container || true && ^
-                 docker load < churn-app.tar && ^
-                 docker run -d -p 8001:8000 ^
-                 -e AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID% ^
-                 -e AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY% ^
-                 -e AWS_DEFAULT_REGION=ap-south-1 ^
-                 --name churn-container churn-app"
-                """
+                sshagent(['ec2-key']) {
+                    bat """
+                    ssh -o StrictHostKeyChecking=no ubuntu@%EC2_HOST% ^
+                    "docker stop churn-container || true && ^
+                     docker rm churn-container || true && ^
+                     docker load < churn-app.tar && ^
+                     docker run -d -p 8001:8000 ^
+                     -e AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID% ^
+                     -e AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY% ^
+                     -e AWS_DEFAULT_REGION=ap-south-1 ^
+                     --name churn-container churn-app"
+                    """
+                }
             }
         }
     }
