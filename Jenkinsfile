@@ -19,39 +19,39 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                bat "docker build -t churn-app ."
+                bat 'docker build -t churn-app .'
             }
         }
 
         stage('Save Image') {
             steps {
-                bat "docker save -o churn-app.tar churn-app"
+                bat 'docker save -o churn-app.tar churn-app'
             }
         }
 
         stage('Copy to EC2') {
             steps {
-                bat """
-                scp -i C:/ProgramData/Jenkins/.jenkins/churn-new-key.pem -o StrictHostKeyChecking=no churn-app.tar ubuntu@%EC2_HOST%:/home/ubuntu/
-                """
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-key', keyFileVariable: 'KEY')]) {
+                    bat 'scp -i %KEY% -o StrictHostKeyChecking=no churn-app.tar ubuntu@%EC2_HOST%:/home/ubuntu/'
+                }
             }
         }
 
         stage('Deploy to EC2') {
             steps {
-                bat """
-                ssh -i C:/ProgramData/Jenkins/.jenkins/churn-new-key.pem -o StrictHostKeyChecking=no ubuntu@%EC2_HOST% "docker stop churn-container || true && docker rm churn-container || true && docker load -i /home/ubuntu/churn-app.tar && docker run -d -p 8001:8000 -e AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY% -e AWS_DEFAULT_REGION=ap-south-1 --name churn-container churn-app"
-                """
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-key', keyFileVariable: 'KEY')]) {
+                    bat 'ssh -i %KEY% -o StrictHostKeyChecking=no ubuntu@%EC2_HOST% "docker stop churn-container || true && docker rm churn-container || true && docker load -i /home/ubuntu/churn-app.tar && docker run -d -p 8001:8000 -e AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY% -e AWS_DEFAULT_REGION=ap-south-1 --name churn-container churn-app"'
+                }
             }
         }
     }
 
     post {
         success {
-            echo "Deployment successful"
+            echo 'Deployment successful'
         }
         failure {
-            echo "Deployment failed"
+            echo 'Deployment failed'
         }
     }
 }
