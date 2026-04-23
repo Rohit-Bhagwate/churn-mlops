@@ -5,7 +5,7 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
         AWS_DEFAULT_REGION = 'ap-south-1'
-        EC2_HOST = '13.206.100.228'
+        EC2_HOST = '13.233.124.174'
     }
 
     stages {
