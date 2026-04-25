@@ -6,6 +6,7 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
         AWS_DEFAULT_REGION = 'ap-south-1'
         EC2_HOST = '13.233.124.174'
+        ECR_REPO = '232932848445.dkr.ecr.ap-south-1.amazonaws.com/churn-app'
     }
 
     stages {
@@ -23,21 +24,23 @@ pipeline {
             }
         }
 
-        stage('Save Image') {
+        stage('Login to ECR') {
             steps {
-                bat "docker save -o churn-app.tar churn-app"
+                bat """
+                aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin %ECR_REPO%
+                """
             }
         }
 
-        stage('Copy to EC2') {
+        stage('Tag Image') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-key', keyFileVariable: 'KEY')]) {
-                    bat """
-                    icacls "%KEY%" /inheritance:r
-                    icacls "%KEY%" /grant:r SYSTEM:R
-                    scp -i "%KEY%" -o StrictHostKeyChecking=no churn-app.tar ubuntu@%EC2_HOST%:/home/ubuntu/
-                    """
-                }
+                bat "docker tag churn-app %ECR_REPO%:latest"
+            }
+        }
+
+        stage('Push to ECR') {
+            steps {
+                bat "docker push %ECR_REPO%:latest"
             }
         }
 
@@ -47,7 +50,7 @@ pipeline {
                     bat """
                     icacls "%KEY%" /inheritance:r
                     icacls "%KEY%" /grant:r SYSTEM:R
-                    ssh -i "%KEY%" -o StrictHostKeyChecking=no ubuntu@%EC2_HOST% "docker stop churn-container || true && docker rm churn-container || true && docker load -i /home/ubuntu/churn-app.tar && docker run -d -p 8001:8000 -e AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY% -e AWS_DEFAULT_REGION=ap-south-1 --name churn-container churn-app"
+                    ssh -i "%KEY%" -o StrictHostKeyChecking=no ubuntu@%EC2_HOST% "docker stop churn-container || true && docker rm churn-container || true && docker pull %ECR_REPO%:latest && docker run -d -p 8001:8000 -e AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID% -e AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY% -e AWS_DEFAULT_REGION=ap-south-1 --name churn-container %ECR_REPO%:latest"
                     """
                 }
             }
