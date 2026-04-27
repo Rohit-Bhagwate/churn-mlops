@@ -4,65 +4,105 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder,StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 import joblib
 import mlflow
 import mlflow.sklearn
 import os
 
-
+# -------------------------------
+# MLflow setup
+# -------------------------------
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
+mlflow.set_experiment("churn_prediction")
 
-#Load data
+# -------------------------------
+# Load Data
+# -------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-data_path = os.path.join(BASE_DIR,"data","WA_Fn-UseC_-Telco-Customer-Churn.csv")
+data_path = os.path.join(BASE_DIR, "data", "WA_Fn-UseC_-Telco-Customer-Churn.csv")
+
 df = pd.read_csv(data_path)
 
-#Cleaning Data
+# -------------------------------
+# Data Cleaning
+# -------------------------------
 df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors='coerce')
-df = df.drop("customerID",axis=1)
-df['Churn'] = df["Churn"].map({"Yes":1,"No":0})
+df = df.drop("customerID", axis=1)
+df["Churn"] = df["Churn"].map({"Yes": 1, "No": 0})
 df = df.dropna()
-#Split features and target
+
+# -------------------------------
+# Features & Target
+# -------------------------------
 X = df.drop("Churn", axis=1)
 y = df["Churn"]
 
-#Train Test Split
-X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2,random_state=42)
+# -------------------------------
+# Train-Test Split
+# -------------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
 categorical_cols = X.select_dtypes(include=['object']).columns
 numerical_cols = X.select_dtypes(exclude=['object']).columns
 
-#Processor
-preprocessor = ColumnTransformer(transformers=[("num",StandardScaler(),numerical_cols),
-                                 ("cat",OneHotEncoder(drop='first',handle_unknown='ignore')
-                                  ,categorical_cols)])
+# -------------------------------
+# Preprocessing
+# -------------------------------
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", StandardScaler(), numerical_cols),
+        ("cat", OneHotEncoder(drop='first', handle_unknown='ignore'), categorical_cols)
+    ]
+)
 
-#pipeline
-pipeline = Pipeline(steps=[("preprocessor",preprocessor),
-                           ("model",LogisticRegression())])
+# -------------------------------
+# Pipeline
+# -------------------------------
+pipeline = Pipeline(
+    steps=[
+        ("preprocessor", preprocessor),
+        ("model", LogisticRegression())
+    ]
+)
 
-mlflow.set_experiment("churn_prediction")
-
-
+# -------------------------------
+# MLflow Run
+# -------------------------------
 with mlflow.start_run() as run:
 
-    pipeline.fit(X_train,y_train)
+    # Log parameters
+    mlflow.log_param("model_type", "LogisticRegression")
+    mlflow.log_param("test_size", 0.2)
+    mlflow.log_param("random_state", 42)
 
+    # Train model
+    pipeline.fit(X_train, y_train)
+
+    # Predict
     y_pred = pipeline.predict(X_test)
 
-    #Evaluation
-    acc = accuracy_score(y_test,y_pred)
-    print("Accuracy:",acc)
-    mlflow.log_metric("accuracy",acc)
+    # Evaluate
+    acc = accuracy_score(y_test, y_pred)
+    print("Accuracy:", acc)
 
-    #Model Saving
+    # Log metric
+    mlflow.log_metric("accuracy", acc)
+
+    # Save model locally (keep for backup)
     model_dir = os.path.join(BASE_DIR, "model")
     os.makedirs(model_dir, exist_ok=True)
 
     model_path = os.path.join(model_dir, "churn_pipeline.pkl")
     joblib.dump(pipeline, model_path)
-    mlflow.sklearn.log_model(pipeline,"model",
-                             registered_model_name="churn_model1")
 
-    print("RUN ID:",run.info.run_id)
+    # Log model to MLflow
+    mlflow.sklearn.log_model(
+        pipeline,
+        artifact_path="model",
+        registered_model_name="churn_model1"
+    )
+
+    print("RUN ID:", run.info.run_id)
