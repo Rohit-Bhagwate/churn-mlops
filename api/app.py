@@ -3,8 +3,6 @@ from fastapi import FastAPI
 import joblib
 from pydantic import BaseModel, Field
 import logging
-import mlflow
-import mlflow.pyfunc
 import os
 import uuid
 from utils.logger import get_logger
@@ -19,7 +17,7 @@ logger = get_logger()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-mlflow.set_tracking_uri(f"sqlite:///{os.path.join(BASE_DIR,'mlflow.db')}")
+
 S3_BUCKET = 'churn-mlops-bucket-12345'
 MODEL_KEY = os.getenv("MODEL_KEY",'churn_pipeline.pkl')
 #Load Trained Pipeline
@@ -30,7 +28,7 @@ try:
     model = joblib.load(BytesIO(obj['Body'].read()))
     logger.info("Model loaded successfully from s3")
 except Exception as e:
-    logger.error(f"Model loading failes:{str(e)}")
+    logger.error(f"Model loading failed:{str(e)}")
     model = None
 
 class ChurnInput(BaseModel):
@@ -70,7 +68,8 @@ def startup_event():
 
 @app.get("/health")
 def health():
-    return {"status": "health"}
+    return {"status": "health",
+            "model_loaded": model is not None}
 
 @app.post("/predict")
 def predict(data: ChurnInput):
