@@ -5,7 +5,7 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
         AWS_DEFAULT_REGION = 'ap-south-1'
-        EC2_HOST = '13.232.154.54'
+        EC2_HOST = '52.66.195.38'
         ECR_REPO = '232932848445.dkr.ecr.ap-south-1.amazonaws.com/churn-app'
     }
 
